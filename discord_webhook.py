@@ -4,18 +4,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def send_discord_notification(grade_changes):
-    if not grade_changes:
+def send_discord_notification(module, message):
+    if not module or 'W3WI' in module['module_number']:
         return
 
-    message = "📢 Es gibt Notenänderungen!"
-    for module in grade_changes:
-        message += f"\n\n**{module['module_name']}** ({module['module_number']}, {module['credits']} Credits)\n"
+    message += f"\n\n**{module['module_name']}** ({module['module_number']}, {module['credits']} Credits)\n"
 
-        for grade in module['detail_grades']:
-            message += (
-                f"{grade['exam_name']}: **{grade['exam_grade']}**\n"
-            )
+    for grade in module['detail_grades']:
+        message += (
+            f"{grade['exam_name']}: **{grade['exam_grade']}**\n"
+        )
     
     payload = {
         "content": message

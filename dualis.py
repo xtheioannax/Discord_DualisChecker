@@ -38,6 +38,19 @@ def get_grades(SESSION_ID):
     response = session.get(GRADES_REQUEST_URL, params=payload)
     return response.text
 
+def get_all_grades_over_semesters(SESSION_ID, semester_ids):
+    all_grades = []
+    for semester_id in semester_ids:
+        payload = {
+            "APPNAME": "CampusNet",
+            "PRGNAME": "COURSERESULTS",
+            "ARGUMENTS": f"{SESSION_ID},-N000307,-N{semester_id}"
+        }
+        response = session.get(DUALIS_URL, params=payload)
+        parsed_grades_of_semester = parse_grades(response.text)
+        all_grades.extend(parsed_grades_of_semester)
+    return all_grades
+
 def parse_grades(html):
     soup = BeautifulSoup(html, "html.parser")
     rows = soup.select("table.nb.list tbody tr")
@@ -121,6 +134,23 @@ def parse_detail_grades(detail_html):
         })
 
     return detail_grades
+
+def get_all_semester_ids(html):
+    soup = BeautifulSoup(html, "html.parser")
+    semester_select = soup.find("select", {"id": "semester"})
+
+    if not semester_select:
+        print("Keine Semester-Auswahl gefunden")
+        return []
+    
+    semester_ids = []
+    for option in semester_select.find_all("option"):
+        semester_id = option.get("value")
+
+        if semester_id:
+            semester_ids.append(semester_id)
+
+    return semester_ids
 
 def logout(SESSION_ID):
     LOGOUT_URL = DUALIS_URL

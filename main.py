@@ -6,14 +6,16 @@ from change_detection import find_changed_modules
 old_grades = []
 while True:
     session_id = dualis.login()
-    new_grades = dualis.get_grades(session_id)
-    parsed_grades = dualis.parse_grades(new_grades)
+    semester_ids = dualis.get_all_semester_ids(dualis.get_grades(session_id))
+    new_grades = dualis.get_all_grades_over_semesters(session_id, semester_ids)
     dualis.logout(session_id)
     
-    changed_modules = find_changed_modules(parsed_grades, old_grades)
-
+    changed_modules = find_changed_modules(new_grades, old_grades)
+    message = "📢 Es gibt Notenänderungen!"
     if changed_modules != []:
-        discord_webhook.send_discord_notification(changed_modules)
+        for module in changed_modules:
+            discord_webhook.send_discord_notification(module, message)
+            message = ""
 
-    old_grades = parsed_grades
-    sleep(3600) # 1 Stunde warten
+    old_grades = new_grades
+    sleep(360) # 6 Minuten
